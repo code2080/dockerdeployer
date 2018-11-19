@@ -1,0 +1,48 @@
+version: '3'
+services:
+  database:
+    image: mysql:{{ mysql_version }}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql_init:/docker-entrypoint-initdb.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    networks:
+      - shared
+  {% for app in apps %}
+  {{ app.name }}:
+    build: 
+      context: ./gunicorn
+      args:
+        - GUNICORN_VERSION={{ gunicorn_version }}
+        - REQUIREMENTS=requirements_{{ app.name }}.txt
+    env_file: ./.env
+    volumes:
+      - ../{{ app.name }}/:/app/
+      - mysql:/var/lib/mysql
+      - www:{{ root_directory }}
+    entrypoint: /script/entrypoint.sh
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "gevent", "--workers", "2", "{{ app.wsgi }}", "--reload"]
+    restart: always
+    depends_on:
+      - database
+    networks:
+      - shared
+  {% endfor %}
+  webserver:
+    image: nginx:stable
+    volumes:
+      - ./nginx/config/:/etc/nginx/
+      - ./nginx/www/:/nginx/www/
+      - www:{{ root_directory }}
+    command: /bin/bash -c "cp -r /nginx/www/* {{ root_directory }} && nginx -g 'daemon off;'"
+    ports:
+      - "80:80"
+    restart: always
+    networks:
+      - shared
+volumes:
+  mysql:
+  www:
+networks:
+  shared:

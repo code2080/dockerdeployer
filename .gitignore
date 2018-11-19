@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+__pycache__/
+
+.env
+mysql_init/01-databases.sql
+nginx/config/conf.d/default.conf
+docker-compose.yml
+
+requirements_*.txt
