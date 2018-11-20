@@ -1,11 +1,15 @@
 #!/usr/bin/python
 import os
-import shutil
 import sys
 import json
 import subprocess
 
-from generators import generate_dotenv, generate_database_initial, generate_nginx_config, generate_docker_compose
+from generators import generate_dotenv, \
+                        generate_database_initial, \
+                        generate_nginx_config, \
+                        generate_docker_compose, \
+                        generate_django_settings, \
+                        generate_requirements
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,16 +20,6 @@ CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
 def get_config():
     with open(CONFIG_FILE, 'r') as f:
         return json.loads(f.read())
-
-
-def copy_requirements():
-    config = get_config()
-    apps = config["apps"]
-    for app in apps:
-        shutil.copy(
-            os.path.join(PARENT_DIR, app["name"], 'requirements.txt'),
-            os.path.join(BASE_DIR, 'django', 'requirements_{}.txt'.format(app["name"]))
-        )
 
 
 def clone():
@@ -41,7 +35,8 @@ def build():
     generate_database_initial()
     generate_nginx_config()
     generate_docker_compose()
-    copy_requirements()
+    generate_django_settings()
+    generate_requirements()
 
 
 def up():

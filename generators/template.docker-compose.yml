@@ -2,6 +2,7 @@ version: '3'
 services:
   database:
     image: mysql:{{ mysql_version }}
+    env_file: ./.env
     volumes:
       - mysql:/var/lib/mysql
       - ./mysql_init:/docker-entrypoint-initdb.d
@@ -11,11 +12,12 @@ services:
       - shared
   {% for app in apps %}
   {{ app.name }}:
-    build: 
-      context: ./gunicorn
+    build:
+      context: ./django
       args:
         - GUNICORN_VERSION={{ gunicorn_version }}
         - REQUIREMENTS=requirements_{{ app.name }}.txt
+        - SETTINGS=settings_{{ app.name }}.py
     env_file: ./.env
     volumes:
       - ../{{ app.name }}/:/app/
@@ -39,6 +41,10 @@ services:
     ports:
       - "80:80"
     restart: always
+    depends_on:
+      {% for app in apps %}
+      - {{ app.name }}
+      {% endfor %}
     networks:
       - shared
 volumes:

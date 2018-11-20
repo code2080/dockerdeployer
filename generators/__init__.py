@@ -24,11 +24,12 @@ def generate_dotenv():
         ("ROOT_DIRECTORY", ROOT_DIRECTORY),
         ("STATIC_DIRECTORY_NAME", STATIC_DIRECTORY_NAME),
         ("MEDIA_DIRECTORY_NAME", MEDIA_DIRECTORY_NAME),
-        # ("MYSQL_VERSION", config["mysql"]["version"]),
-        # ("GUNICORN_VERSION", config["django"]["gunicorn_version"]),
+        ("MYSQL_USER", config["mysql"]["user"]),
+        ("MYSQL_ROOT_PASSWORD", config["mysql"]["password"]),
         ("DJANGO_ADMIN_USERNAME", config["django"]["djang_admin"]["username"]),
         ("DJANGO_ADMIN_PASSWORD", config["django"]["djang_admin"]["password"]),
         ("DJANGO_ADMIN_EMAIL", config["django"]["djang_admin"]["email"]),
+        ("PYTHONPATH", "/settings/"),
     ]
     with open(DOTENV_FILE, 'w') as f:
         for var in vars:
@@ -73,3 +74,43 @@ def generate_docker_compose():
             mysql_version=config["mysql"]["version"],
             gunicorn_version=config["django"]["gunicorn_version"],
             apps=config["apps"]))
+
+
+def generate_django_settings():
+    config = get_config()
+    env = Environment(loader=FileSystemLoader(BASE_DIR))
+    template = env.get_template('template.settings.py')
+
+    apps = config["apps"]
+    for app in apps:
+        constants = [
+            ("SECRET_KEY", app["secret_key"]),
+            ("DEBUG", app["debug"]),
+            ("STATIC_URL", "/{}/".format(STATIC_DIRECTORY_NAME)),
+            ("MEDIA_URL", "/{}/".format(MEDIA_DIRECTORY_NAME)),
+            ("STATIC_ROOT", os.path.join(ROOT_DIRECTORY, STATIC_DIRECTORY_NAME)),
+            ("MEDIA_ROOT", os.path.join(ROOT_DIRECTORY, MEDIA_DIRECTORY_NAME)),
+        ]
+        with open(os.path.join(PARENT_DIR, 'django', 'settings_{}.py'.format(app["name"])), 'w') as f:
+            f.write(template.render(
+                secret_key=app["secret_key"],
+                debug=app["debug"],
+                static_url= "/{}/".format(STATIC_DIRECTORY_NAME),
+                media_url= "/{}/".format(MEDIA_DIRECTORY_NAME),
+                static_root=os.path.join(ROOT_DIRECTORY, STATIC_DIRECTORY_NAME),
+                media_root=os.path.join(ROOT_DIRECTORY, MEDIA_DIRECTORY_NAME),
+                db_name=app["name"],
+                db_usr=config["mysql"]["user"],
+                db_pwd=config["mysql"]["password"]))
+
+
+def generate_requirements():
+    config = get_config()
+    env = Environment(loader=FileSystemLoader(BASE_DIR))
+    template = env.get_template('template.requirements.txt')
+
+    apps = config["apps"]
+    for app in apps:
+        with open(os.path.join(os.path.dirname(PARENT_DIR), app["name"], 'requirements.txt'), 'r') as f_in:
+            with open(os.path.join(PARENT_DIR, 'django', 'requirements_{}.txt'.format(app["name"])), 'w') as f_out:
+                f_out.write(template.render(requirements=f_in.read()))

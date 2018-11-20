@@ -8,3 +8,4 @@ nginx/config/conf.d/default.conf
 docker-compose.yml
 
 requirements_*.txt
+settings_*.py
