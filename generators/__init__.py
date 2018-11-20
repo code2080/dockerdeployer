@@ -104,7 +104,7 @@ def generate_django_settings():
                 db_pwd=config["mysql"]["password"]))
 
 
-def generate_requirements():
+def generate_django_requirements():
     config = get_config()
     env = Environment(loader=FileSystemLoader(BASE_DIR))
     template = env.get_template('template.requirements.txt')
