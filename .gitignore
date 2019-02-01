@@ -2,6 +2,7 @@
 *.pyc
 __pycache__/
 
+config.json
 .env
 mysql_init/01-databases.sql
 nginx/config/conf.d/default.conf

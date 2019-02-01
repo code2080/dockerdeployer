@@ -22,8 +22,6 @@ def generate_dotenv():
     config = get_config()
     vars = [
         ("ROOT_DIRECTORY", ROOT_DIRECTORY),
-        ("STATIC_DIRECTORY_NAME", STATIC_DIRECTORY_NAME),
-        ("MEDIA_DIRECTORY_NAME", MEDIA_DIRECTORY_NAME),
         ("MYSQL_USER", config["mysql"]["user"]),
         ("MYSQL_ROOT_PASSWORD", config["mysql"]["password"]),
         ("DJANGO_ADMIN_USERNAME", config["django"]["djang_admin"]["username"]),
@@ -83,14 +81,6 @@ def generate_django_settings():
 
     apps = config["apps"]
     for app in apps:
-        constants = [
-            ("SECRET_KEY", app["secret_key"]),
-            ("DEBUG", app["debug"]),
-            ("STATIC_URL", "/{}/".format(STATIC_DIRECTORY_NAME)),
-            ("MEDIA_URL", "/{}/".format(MEDIA_DIRECTORY_NAME)),
-            ("STATIC_ROOT", os.path.join(ROOT_DIRECTORY, STATIC_DIRECTORY_NAME)),
-            ("MEDIA_ROOT", os.path.join(ROOT_DIRECTORY, MEDIA_DIRECTORY_NAME)),
-        ]
         with open(os.path.join(PARENT_DIR, 'django', 'settings_{}.py'.format(app["name"])), 'w') as f:
             f.write(template.render(
                 secret_key=app["secret_key"],

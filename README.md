@@ -2,31 +2,33 @@ Docker deployer for Django application
 
 # INSTALLATION
 
-0. Prepare
+## 0. Preparing
 
-**Install Docker & Docker compose;**
+**Install Docker & Docker compose:**
 
 `https://docs.docker.com/install/linux/docker-ce/ubuntu/
 https://docs.docker.com/compose/install/`
 
-**Install python requirements:**
+**Install python 3x requirements:**
 
 `pip install -r requirements.txt`
 
-1. Clone repos
+## 1. Clone repos
 
 `python run.py clone`
 
-2. Build .env, nginx default.conf
+## 2. Build .env, nginx default.conf
 
 `python run.py build`
 
-3. Run docker
+## 3. Run docker
 
 `python run.py up`
 
 # ROADMAP
 
+- Fix stop & remove commands
+- Work with private repos
 - Restart commands
 - Django app envvar
 - Improve nginx configuration
@@ -36,3 +38,7 @@ https://docs.docker.com/compose/install/`
 - Model abtract layer for Go & Django app
 - SSL with letencrypt
 - Support Redis, memcached, Elasticsearch...
+
+# BUGS
+
+- Run with sudo
