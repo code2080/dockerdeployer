@@ -89,7 +89,7 @@ def generate_django_settings():
                 media_url= "/{}/".format(MEDIA_DIRECTORY_NAME),
                 static_root=os.path.join(ROOT_DIRECTORY, STATIC_DIRECTORY_NAME),
                 media_root=os.path.join(ROOT_DIRECTORY, MEDIA_DIRECTORY_NAME),
-                db_name=app["name"],
+                db_name=app["database_name"],
                 db_usr=config["mysql"]["user"],
                 db_pwd=config["mysql"]["password"]))
 

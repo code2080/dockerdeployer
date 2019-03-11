@@ -14,7 +14,7 @@
     },
     "apps": [
         {
-            "name": "ss_core",
+            "name": "ss-core",
             "git_repo": "https://github.com/sosub/ss-core",
             "domain": "sosub.org",
             "type": "django",
