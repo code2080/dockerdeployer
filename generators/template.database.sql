@@ -1,3 +1,5 @@
 {% for app in apps %}
-CREATE DATABASE IF NOT EXISTS `{{ app.database_name }}`;
+    {% if app.type == "django" %}
+        CREATE DATABASE IF NOT EXISTS `{{ app.database_name }}`;
+    {% endif %}
 {% endfor %}

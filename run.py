@@ -9,7 +9,8 @@ from generators import generate_dotenv, \
                         generate_nginx_config, \
                         generate_docker_compose, \
                         generate_django_settings, \
-                        generate_django_requirements
+                        generate_django_requirements, \
+                        generate_nodejs_package
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -38,6 +39,7 @@ def build():
     generate_docker_compose()
     generate_django_settings()
     generate_django_requirements()
+    generate_nodejs_package()
 
 
 def dev_up():
@@ -62,27 +64,88 @@ def clean():
     os.system('docker rmi -f $(docker images -f dangling=true -q)')
 
 
-def reset():
-    os.system('docker rmi -f $(docker images -f dangling=true -q)')
+def clear():
     config = get_config()
     apps = config["apps"]
 
+    # Stop containers
     os.system('docker stop dockerdeployer_webserver_1')
     os.system('docker stop dockerdeployer_database_1')
     for app in apps:
         os.system('docker stop dockerdeployer_{}_1'.format(app["name"]))
 
+    # Remove containers
     os.system('docker rm dockerdeployer_webserver_1')
     os.system('docker rm dockerdeployer_database_1')
     for app in apps:
         os.system('docker rm dockerdeployer_{}_1'.format(app["name"]))
 
+    # Remove images
+    os.system('docker rmi -f $(docker images -f dangling=true -q)')
+
+    
+def reset():
+    config = get_config()
+    apps = config["apps"]
+
+    # Stop containers
+    os.system('docker stop dockerdeployer_webserver_1')
+    os.system('docker stop dockerdeployer_database_1')
+    for app in apps:
+        os.system('docker stop dockerdeployer_{}_1'.format(app["name"]))
+
+    # Remove containers
+    os.system('docker rm dockerdeployer_webserver_1')
+    os.system('docker rm dockerdeployer_database_1')
+    for app in apps:
+        os.system('docker rm dockerdeployer_{}_1'.format(app["name"]))
+
+    # Remove volumes
     os.system('docker volume rm dockerdeployer_mysql')
-    os.system('docker volume rm dockerdeployer_www')
+    servers = {}
+    for app in config["apps"]:
+        servers[app["server"]] = servers.get(app["server"], []) + [app]
+    for server in servers:
+        os.system('docker volume rm dockerdeployer_root_directory_{}'.format(server.replace(".", "_").replace(":", "_")))
+
+    # Remove images
+    os.system('docker rmi -f $(docker images -f dangling=true -q)')
+    for app in apps:
+        os.system('docker rmi dockerdeployer_{}'.format(app["name"]))
+
+
+def restart(app_name):
+    os.system('docker restart dockerdeployer_{}_1'.format(app_name))
+
+
+def backup(app_name):
+    MYSQL_INIT_DIR = os.path.join(BASE_DIR, 'mysql_init')
+    if not os.path.isdir(MYSQL_INIT_DIR):
+        os.mkdir(MYSQL_INIT_DIR)
+
+    config = get_config()
+    apps = config["apps"]
+    app = None
+    for a in apps:
+        if a["name"] == app_name:
+            app = a
+    if app:
+        os.system('docker exec dockerdeployer_database_1 /usr/bin/mysqldump -u {} --password={} {} > mysql_init/backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
+
+
+def restore(app_name):
+    config = get_config()
+    apps = config["apps"]
+    app = None
+    for a in apps:
+        if a["name"] == app_name:
+            app = a
+    if app:
+        os.system('cat mysql_init/backup.sql | docker exec -i dockerdeployer_database_1 /usr/bin/mysql -u {} --password={} {}'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
 
 
 def main():
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         if sys.argv[1] == 'clone':
             clone()
         elif sys.argv[1] == 'build':
@@ -95,8 +158,16 @@ def main():
             stop()
         elif sys.argv[1] == 'clean':
             clean()
+        elif sys.argv[1] == 'clear':
+            clear()
         elif sys.argv[1] == 'reset':
             reset()
+        elif sys.argv[1] == 'restart':
+            restart(sys.argv[2])
+        elif sys.argv[1] == 'backup':
+            backup(sys.argv[2])
+        elif sys.argv[1] == 'restore':
+            restore(sys.argv[2])
 
 if __name__ == '__main__':
     main()

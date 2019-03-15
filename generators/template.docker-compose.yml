@@ -10,7 +10,8 @@ services:
     restart: always
     networks:
       - shared
-  {% for app in apps %}
+{% for app in apps %}
+{% if app.type == "django" %}
   {{ app.name }}:
     build:
       context: ./django
@@ -22,24 +23,48 @@ services:
     volumes:
       - ../{{ app.name }}/:/app/
       - mysql:/var/lib/mysql
-      - www:{{ root_directory }}
+    {% set server_list = app.server.split(':') %}
+      - root_directory_{{ server_list[0]|replace(".", "_", 3) }}_{{ server_list[1] }}:/django/
     entrypoint: /script/entrypoint.sh
-    command: ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "gevent", "--workers", "2", "{{ app.wsgi }}", "--reload"]
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "gevent", "--workers", "{{ app.workers }}", "{{ app.wsgi }}", "--reload"]
     restart: always
     depends_on:
       - database
     networks:
       - shared
-  {% endfor %}
+{% elif app.type == "nodejs" and app.start_command %}
+  {{ app.name }}:
+    build:
+      context: ./nodejs
+      args:
+        - PACKAGES=package_{{ app.name }}.json
+    env_file: ./.env
+    volumes:
+      - ../{{ app.name }}/:/app/
+    command: {{ app.start_command }}
+    restart: always
+    networks:
+      - shared
+{% endif %}
+{% endfor %}
   webserver:
     image: nginx:stable
     volumes:
       - ./nginx/config/:/etc/nginx/
-      - ./nginx/www/:/nginx/www/
-      - www:{{ root_directory }}
-    command: /bin/bash -c "cp -r /nginx/www/* {{ root_directory }} && nginx -g 'daemon off;'"
+    {% for server in servers %}
+    {% set server_list = server.split(':') %}
+      - root_directory_{{ server_list[0]|replace(".", "_", 3) }}_{{ server_list[1] }}:/root_directory_{{ server_list[0]|replace(".", "_", 3) }}_{{ server_list[1] }}/
+    {% endfor %}
+    {% for app in apps %}
+    {% if app.static_files %}
+      - ../{{ app.name }}/www/:/www_{{ app.name }}/
+    {% endif %}
+    {% endfor %}
+    command: /bin/bash -c "nginx -g 'daemon off;'"
     ports:
-      - "80:80"
+    {% for port in ports %}
+      - "{{ port }}:{{ port }}"
+    {% endfor %}
     restart: always
     depends_on:
       {% for app in apps %}
@@ -49,6 +74,9 @@ services:
       - shared
 volumes:
   mysql:
-  www:
+{% for server in servers %}
+{% set server_list = server.split(':') %}
+  root_directory_{{ server_list[0]|replace(".", "_", 3) }}_{{ server_list[1] }}:
+{% endfor %}
 networks:
   shared:

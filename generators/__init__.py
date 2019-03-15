@@ -1,5 +1,6 @@
 import os
 import json
+from shutil import copyfile
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -7,11 +8,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(BASE_DIR)
 CONFIG_FILE = os.path.join(PARENT_DIR, 'config.json')
 DOTENV_FILE = os.path.join(PARENT_DIR, '.env')
-
-ROOT_DIRECTORY = '/www/'
-STATIC_DIRECTORY_NAME = 'static'
-MEDIA_DIRECTORY_NAME = 'media'
-
 
 def get_config():
     with open(CONFIG_FILE, 'r') as f:
@@ -21,7 +17,6 @@ def get_config():
 def generate_dotenv():
     config = get_config()
     vars = [
-        ("ROOT_DIRECTORY", ROOT_DIRECTORY),
         ("MYSQL_USER", config["mysql"]["user"]),
         ("MYSQL_ROOT_PASSWORD", config["mysql"]["password"]),
         ("DJANGO_ADMIN_USERNAME", config["django"]["djang_admin"]["username"]),
@@ -55,10 +50,12 @@ def generate_nginx_config():
     env = Environment(loader=FileSystemLoader(BASE_DIR))
     template = env.get_template('template.nginx.conf')
 
+    servers = {}
+    for app in config["apps"]:
+        servers[app["server"]] = servers.get(app["server"], []) + [app]
+
     with open(os.path.join(PARENT_DIR, 'nginx', 'config', 'conf.d', 'default.conf'), 'w') as f:
-        f.write(template.render(
-            root_directory=ROOT_DIRECTORY,
-            apps=config["apps"]))
+        f.write(template.render(servers=servers))
 
 
 def generate_docker_compose():
@@ -66,12 +63,20 @@ def generate_docker_compose():
     env = Environment(loader=FileSystemLoader(BASE_DIR))
     template = env.get_template('template.docker-compose.yml')
 
+    servers = {}
+    ports = []
+    for app in config["apps"]:
+        servers[app["server"]] = servers.get(app["server"], []) + [app]
+        ports.append(app["server"].split(":")[1])
+    ports = list(set(ports))
+
     with open(os.path.join(PARENT_DIR, 'docker-compose.yml'), 'w') as f:
         f.write(template.render(
-            root_directory=ROOT_DIRECTORY,
             mysql_version=config["mysql"]["version"],
             gunicorn_version=config["django"]["gunicorn_version"],
-            apps=config["apps"]))
+            apps=config["apps"],
+            servers=servers,
+            ports=ports))
 
 
 def generate_django_settings():
@@ -81,17 +86,13 @@ def generate_django_settings():
 
     apps = config["apps"]
     for app in apps:
-        with open(os.path.join(PARENT_DIR, 'django', 'settings_{}.py'.format(app["name"])), 'w') as f:
-            f.write(template.render(
-                secret_key=app["secret_key"],
-                debug=app["debug"],
-                static_url= "/{}/".format(STATIC_DIRECTORY_NAME),
-                media_url= "/{}/".format(MEDIA_DIRECTORY_NAME),
-                static_root=os.path.join(ROOT_DIRECTORY, STATIC_DIRECTORY_NAME),
-                media_root=os.path.join(ROOT_DIRECTORY, MEDIA_DIRECTORY_NAME),
-                db_name=app["database_name"],
-                db_usr=config["mysql"]["user"],
-                db_pwd=config["mysql"]["password"]))
+        if app["type"] == "django":
+            with open(os.path.join(PARENT_DIR, 'django', 'settings_{}.py'.format(app["name"])), 'w') as f:
+                f.write(template.render(
+                    db_name=app["database_name"],
+                    db_usr=config["mysql"]["user"],
+                    db_pwd=config["mysql"]["password"],
+                    settings=app["settings"]))
 
 
 def generate_django_requirements():
@@ -101,6 +102,19 @@ def generate_django_requirements():
 
     apps = config["apps"]
     for app in apps:
-        with open(os.path.join(os.path.dirname(PARENT_DIR), app["name"], 'requirements.txt'), 'r') as f_in:
-            with open(os.path.join(PARENT_DIR, 'django', 'requirements_{}.txt'.format(app["name"])), 'w') as f_out:
-                f_out.write(template.render(requirements=f_in.read()))
+        if app["type"] == "django":
+            with open(os.path.join(os.path.dirname(PARENT_DIR), app["name"], 'requirements.txt'), 'r') as f_in:
+                with open(os.path.join(PARENT_DIR, 'django', 'requirements_{}.txt'.format(app["name"])), 'w') as f_out:
+                    f_out.write(template.render(requirements=f_in.read()))
+
+
+def generate_nodejs_package():
+    config = get_config()
+
+    apps = config["apps"]
+    for app in apps:
+        if app["type"] == "nodejs":
+            copyfile(
+                os.path.join(os.path.dirname(PARENT_DIR), app["name"], 'package.json'),
+                os.path.join(PARENT_DIR, 'nodejs', 'package_{}.json'.format(app["name"]))
+            )

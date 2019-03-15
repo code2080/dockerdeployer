@@ -1,7 +1,3 @@
-SECRET_KEY = '{{ secret_key }}'
-DEBUG = {{ debug }}
-ALLOWED_HOSTS = ['*', ]
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -12,7 +8,11 @@ DATABASES = {
     }
 }
 
-STATIC_URL = '{{ static_url }}'
-MEDIA_URL = '{{ media_url }}'
-STATIC_ROOT = '{{ static_root }}'
-MEDIA_ROOT = '{{ media_root }}'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATIC_ROOT = '/django/static/'
+MEDIA_ROOT = '/django/media/'
+
+{% for setting in settings %}
+{{ setting.key }} = {{ setting.value|tojson }}
+{% endfor %}
