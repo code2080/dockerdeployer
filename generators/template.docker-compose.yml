@@ -26,7 +26,7 @@ services:
     {% set server_list = app.server.split(':') %}
       - root_directory_{{ server_list[0]|replace(".", "_", 3) }}_{{ server_list[1] }}:/django/
     entrypoint: /script/entrypoint.sh
-    command: ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "gevent", "--workers", "{{ app.workers }}", "{{ app.wsgi }}", "--reload"]
+    command: ["gunicorn", "--bind", "0.0.0.0:{{ app.port }}", "-k", "gevent", "--workers", "{{ app.workers }}", "{{ app.wsgi }}", "--reload"]
     restart: always
     depends_on:
       - database
