@@ -32,17 +32,14 @@ def generate_dotenv():
 def generate_database_initial():
     config = get_config()
     env = Environment(loader=FileSystemLoader(BASE_DIR))
-    template = env.get_template('template.database.sql')
+    template = env.get_template('template.init_database.py')
 
-    MYSQL_INIT_DIR = os.path.join(PARENT_DIR, 'mysql_init')
+    MYSQL_INIT_DIR = os.path.join(PARENT_DIR, 'django')
     if not os.path.isdir(MYSQL_INIT_DIR):
         os.mkdir(MYSQL_INIT_DIR)
 
-    with open(os.path.join(MYSQL_INIT_DIR, '01-databases.sql'), 'w') as f:
-        f.write(template.render(
-            user=config["mysql"]["user"],
-            password=config["mysql"]["password"],
-            apps=config["apps"]))
+    with open(os.path.join(MYSQL_INIT_DIR, 'init_database.py'), 'w') as f:
+        f.write(template.render(apps=config["apps"]))
 
 
 def generate_nginx_config():
@@ -55,7 +52,9 @@ def generate_nginx_config():
         servers[app["server"]] = servers.get(app["server"], []) + [app]
 
     with open(os.path.join(PARENT_DIR, 'nginx', 'config', 'conf.d', 'default.conf'), 'w') as f:
-        f.write(template.render(servers=servers))
+        f.write(template.render(
+            servers=servers,
+            customize_nginx=config["customize_nginx"]))
 
 
 def generate_docker_compose():
@@ -92,6 +91,7 @@ def generate_django_settings():
                     db_name=app["database_name"],
                     db_usr=config["mysql"]["user"],
                     db_pwd=config["mysql"]["password"],
+                    host=app["server"].split(":")[0],
                     settings=app["settings"]))
 
 

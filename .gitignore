@@ -4,10 +4,10 @@ __pycache__/
 
 config.json
 .env
-mysql_init/01-databases.sql
-mysql_init/backup.sql
-nginx/config/conf.d/default.conf
 docker-compose.yml
 
-requirements_*.txt
-settings_*.py
+nginx/config/conf.d/default.conf
+
+django/init_database.py
+django/requirements_*.txt
+django/settings_*.py

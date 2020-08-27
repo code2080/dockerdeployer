@@ -13,8 +13,9 @@ RUN pip install --no-cache-dir -r $REQUIREMENTS
 
 COPY $SETTINGS /settings/dockerdeployer.py
 
+COPY init_database.py /script/
 COPY check_connection.py /script/
 COPY create_django_admin_user.py /script/
-
 COPY entrypoint.sh /script/
+
 RUN ["chmod", "+x", "/script/entrypoint.sh"]
