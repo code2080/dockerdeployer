@@ -11,3 +11,5 @@ nginx/config/conf.d/default.conf
 django/init_database.py
 django/requirements_*.txt
 django/settings_*.py
+
+backups/*

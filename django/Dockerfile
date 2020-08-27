@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir gunicorn==$GUNICORN_VERSION
 COPY $REQUIREMENTS /app/
 RUN pip install --no-cache-dir -r $REQUIREMENTS
 
-COPY $SETTINGS /settings/dockerdeployer.py
+COPY $SETTINGS /settings/dode.py
 
 COPY init_database.py /script/
 COPY check_connection.py /script/

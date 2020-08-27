@@ -1,0 +1,60 @@
+{
+    "mysql": {
+        "version": "5.7",
+        "user": "root",
+        "password": "123456"
+    },
+    "django": {
+        "gunicorn_version": "19.7.1",
+        "djang_admin": {
+            "username": "admin",
+            "password": "123456",
+            "email": "admin@example.com"
+        }
+    },
+    "apps": [
+        {
+            "type": "django",
+            "name": "django1",
+            "git_repo": "https://github.com/code2080/django1",
+            "server": "django1.code2080.com:80",
+            "port": 8000,
+            "wsgi": "django1.wsgi",
+            "database_name": "django1",
+            "settings": [
+                {
+                    "key": "SECRET_KEY",
+                    "value": "abc"
+                },
+                {
+                    "key": "ALLOWED_HOSTS",
+                    "value": ["django1.code2080.com", "new-django.code2080.com"]
+                }
+            ],
+            "routes": ["/"],
+            "static_routes": ["/static/", "/media/"],
+            "workers": 2
+        },
+        {
+            "type": "django",
+            "name": "django2",
+            "git_repo": "https://github.com/code2080/django2",
+            "server": "django2.code2080.com:80",
+            "port": 8001,
+            "wsgi": "django2.wsgi",
+            "database_name": "django2",
+            "settings": [
+                {
+                    "key": "SECRET_KEY",
+                    "value": "xyz"
+                }
+            ],
+            "routes": ["/"],
+            "static_routes": ["/static/", "/media/"],
+            "workers": 2
+        }
+    ],
+    "customize_nginx": {
+        "django1.code2080.com:80": "server_name django1.code2080.com new-django.code2080.com;\nif ($host = 'django1.code2080.com') {return 301 $scheme://new-django.code2080.com$request_uri;}"
+    }
+}

@@ -1,15 +1,23 @@
-Docker deployer for Django application
+Docker deployer for Django application, maybe static site or nodejs
 
-# INSTALLATION
+# REQUIREMENTS
 
-## 0. Preparing
-
-**Install Docker & Docker compose:**
+- Docker & Docker compose
 
 `https://docs.docker.com/install/linux/docker-ce/ubuntu/
 https://docs.docker.com/compose/install/`
 
-**Install python 3x requirements:**
+- Python 3.x & Pip3
+
+- Git
+
+# SETUP
+
+## Prepare for run.py
+
+- Create your own python3 virtualenv then activate it
+
+- On `dode` directory
 
 `pip install -r requirements.txt`
 
@@ -17,28 +25,20 @@ https://docs.docker.com/compose/install/`
 
 `python run.py clone`
 
-## 2. Build .env, nginx default.conf
+## 2. Build configs
 
 `python run.py build`
 
-## 3. Run docker
+## 3. Build and Run containers
 
-`python run.py up`
+- `python run.py dev.up` (foreground with logs)
+
+- `python run.py prod.up`
 
 # ROADMAP
 
-- Fix stop & remove commands
 - Work with private repos
-- Restart commands
-- Django app envvar
-- Improve nginx configuration
-- Support Go & JS applications
-- Import export database
 - CI/CD
-- Model abtract layer for Go & Django app
 - SSL with letencrypt
 - Support Redis, memcached, Elasticsearch...
 
-# BUGS
-
-- Run with sudo

@@ -1,0 +1,76 @@
+
+{
+    "mysql": {
+        "version": "5.7",
+        "user": "root",
+        "password": "123456"
+    },
+    "django": {
+        "gunicorn_version": "19.7.1",
+        "djang_admin": {
+            "username": "admin",
+            "password": "123456",
+            "email": "admin@localhost"
+        }
+    },
+    "apps": [
+        {
+            "type": "django",
+            "name": "ss-core",
+            "git_repo": "https://github.com/sosub/ss-core",
+            "server": "sosub.org:80",
+            "port": 8000,
+            "wsgi": "ss_core.wsgi",
+            "database_name": "ss_core",
+            "settings": [
+                {
+                    "key": "SECRET_KEY",
+                    "value": "abc"
+                },
+                {
+                    "key": "DEBUG",
+                    "value": 1
+                },
+                {
+                    "key": "ALLOWED_HOSTS",
+                    "value": ["*"]
+                },
+                {
+                    "key": "YOUTUBE_API_KEY",
+                    "value": "xyz"
+                },
+                {
+                    "key": "CORS_ORIGIN_WHITELIST",
+                    "value": ["up.sosub.org"]
+                }
+            ],
+            "routes": ["~* ^/(admin|rest-auth|__debug__|graphql|graphql_token|api|gioi-thieu|cau-hoi-thuong-gap|gop-y|dich-thuat|give|join|ss)"],
+            "static_routes": ["/static/"],
+            "static_files": [
+                "/favicon.ico",
+                "/robots.txt",
+                "/sitemap.xml",
+                "/test.txt"
+            ],
+            "workers": 2
+        },
+        {
+            "type": "nodejs",
+            "name": "ss-home",
+            "git_repo": "https://github.com/sosub/ss-home",
+            "server": "sosub.org:80",
+            "port": 3000,
+            "routes": ["/", "/static/home/"],
+            "start_command": "sh -c 'npm run docker:prod'"
+        },
+        {
+            "type": "nodejs",
+            "name": "ss-up",
+            "git_repo": "https://github.com/sosub/ss-up",
+            "server": "up.sosub.org:80",
+            "port": 5000,
+            "routes": ["/"],
+            "start_command": "sh -c 'npm run build && serve -s build/'"
+        }
+    ]
+}

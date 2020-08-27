@@ -29,7 +29,7 @@ def clone():
     for app in apps:
         app_dir = os.path.join(PARENT_DIR, app["name"])
         if not os.path.isdir(app_dir):
-            subprocess.Popen(['git', 'clone', app["git_repo"], app_dir, '--depth=1'])
+            subprocess.Popen(['git', 'clone', app["git_repo"], app_dir, app["name"], '--depth=1'])
 
 
 def build():
@@ -52,12 +52,12 @@ def prod_up():
 
 
 def stop():
-    os.system('docker stop dockerdeployer_webserver_1')
-    os.system('docker stop dockerdeployer_database_1')
+    os.system('docker stop dode_webserver')
+    os.system('docker stop dode_database')
     config = get_config()
     apps = config["apps"]
     for app in apps:
-        os.system('docker stop dockerdeployer_{}_1'.format(app["name"]))
+        os.system('docker stop dode_{}'.format(app["name"]))
 
 
 def clean():
@@ -69,16 +69,16 @@ def clear():
     apps = config["apps"]
 
     # Stop containers
-    os.system('docker stop dockerdeployer_webserver_1')
-    os.system('docker stop dockerdeployer_database_1')
+    os.system('docker stop dode_webserver')
+    os.system('docker stop dode_database')
     for app in apps:
-        os.system('docker stop dockerdeployer_{}_1'.format(app["name"]))
+        os.system('docker stop dode_{}'.format(app["name"]))
 
     # Remove containers
-    os.system('docker rm dockerdeployer_webserver_1')
-    os.system('docker rm dockerdeployer_database_1')
+    os.system('docker rm dode_webserver')
+    os.system('docker rm dode_database')
     for app in apps:
-        os.system('docker rm dockerdeployer_{}_1'.format(app["name"]))
+        os.system('docker rm dode_{}'.format(app["name"]))
 
     # Remove images
     os.system('docker rmi -f $(docker images -f dangling=true -q)')
@@ -89,37 +89,37 @@ def reset():
     apps = config["apps"]
 
     # Stop containers
-    os.system('docker stop dockerdeployer_webserver_1')
-    os.system('docker stop dockerdeployer_database_1')
+    os.system('docker stop dode_webserver')
+    os.system('docker stop dode_database')
     for app in apps:
-        os.system('docker stop dockerdeployer_{}_1'.format(app["name"]))
+        os.system('docker stop dode_{}'.format(app["name"]))
 
     # Remove containers
-    os.system('docker rm dockerdeployer_webserver_1')
-    os.system('docker rm dockerdeployer_database_1')
+    os.system('docker rm dode_webserver')
+    os.system('docker rm dode_database')
     for app in apps:
-        os.system('docker rm dockerdeployer_{}_1'.format(app["name"]))
+        os.system('docker rm dode_{}'.format(app["name"]))
 
     # Remove volumes
-    os.system('docker volume rm dockerdeployer_mysql')
+    os.system('docker volume rm dode_mysql')
     servers = {}
     for app in config["apps"]:
         servers[app["server"]] = servers.get(app["server"], []) + [app]
     for server in servers:
-        os.system('docker volume rm dockerdeployer_root_directory_{}'.format(server.replace(".", "_").replace(":", "_")))
+        os.system('docker volume rm dode_root_directory_{}'.format(server.replace(".", "_").replace(":", "_")))
 
     # Remove images
     os.system('docker rmi -f $(docker images -f dangling=true -q)')
     for app in apps:
-        os.system('docker rmi dockerdeployer_{}'.format(app["name"]))
+        os.system('docker rmi dode_{}'.format(app["name"]))
 
 
 def restart(app_name):
-    os.system('docker restart dockerdeployer_{}_1'.format(app_name))
+    os.system('docker restart dode_{}'.format(app_name))
 
 
 def backup(app_name):
-    MYSQL_INIT_DIR = os.path.join(BASE_DIR, 'mysql_init')
+    MYSQL_INIT_DIR = os.path.join(BASE_DIR, 'backups')
     if not os.path.isdir(MYSQL_INIT_DIR):
         os.mkdir(MYSQL_INIT_DIR)
 
@@ -130,7 +130,7 @@ def backup(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('docker exec dockerdeployer_database_1 /usr/bin/mysqldump -u {} --password={} {} > mysql_init/backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
+        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backup/backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
 
 
 def restore(app_name):
@@ -141,7 +141,7 @@ def restore(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('cat mysql_init/backup.sql | docker exec -i dockerdeployer_database_1 /usr/bin/mysql -u {} --password={} {}'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
+        os.system('cat backups/backup.sql | docker exec -i dode_database /usr/bin/mysql -u {} --password={} {}'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
 
 
 def main():

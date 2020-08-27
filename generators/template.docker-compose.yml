@@ -1,7 +1,7 @@
 version: '3'
 services:
   database:
-    container_name: dd_database
+    container_name: dode_database
     image: mysql:{{ mysql_version }}
     env_file: ./.env
     volumes:
@@ -13,7 +13,7 @@ services:
 {% for app in apps %}
 {% if app.type == "django" %}
   {{ app.name }}:
-    container_name: dd_{{ app.name }}
+    container_name: dode_{{ app.name }}
     build:
       context: ./django
       args:
@@ -35,7 +35,7 @@ services:
       - shared
 {% elif app.type == "nodejs" and app.start_command %}
   {{ app.name }}:
-    container_name: dd_{{ app.name }}
+    container_name: dode_{{ app.name }}
     build:
       context: ./nodejs
       args:
@@ -50,7 +50,7 @@ services:
 {% endif %}
 {% endfor %}
   webserver:
-    container_name: dd_webserver
+    container_name: dode_webserver
     image: nginx:stable
     volumes:
       - ./nginx/config/:/etc/nginx/
