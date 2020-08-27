@@ -130,10 +130,10 @@ def backup(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backup/backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
+        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backup/{}_backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"], app["name"]))
 
 
-def restore(app_name):
+def restore(app_name, backup_path):
     config = get_config()
     apps = config["apps"]
     app = None
@@ -141,7 +141,7 @@ def restore(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('cat backups/backup.sql | docker exec -i dode_database /usr/bin/mysql -u {} --password={} {}'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
+        os.system('cat {} | docker exec -i dode_database /usr/bin/mysql -u {} --password={} {}'.format(backup_path, config["mysql"]["user"], config["mysql"]["password"], app["database_name"]))
 
 
 def main():
@@ -167,7 +167,7 @@ def main():
         elif sys.argv[1] == 'backup':
             backup(sys.argv[2])
         elif sys.argv[1] == 'restore':
-            restore(sys.argv[2])
+            restore(sys.argv[2], sys.argv[3])
 
 if __name__ == '__main__':
     main()
