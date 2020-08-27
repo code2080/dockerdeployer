@@ -3,22 +3,22 @@ like react js
 
 # REQUIREMENTS
 
-- Docker & Docker compose
+- Docker & Docker compose:
 
-`https://docs.docker.com/install/linux/docker-ce/ubuntu/
-https://docs.docker.com/compose/install/`
+`https://docs.docker.com/install/linux/docker-ce/ubuntu/`
+`https://docs.docker.com/compose/install/`
 
-- Python 3.x & Pip3
+- Python3 & Pip3
 
 - Git
 
 # SETUP
 
-## Prepare for run.py
+## 0. Prepare python env to run run.py
 
 - Create your own python3 virtualenv then activate it
 
-- On `dode` directory
+- On `dode` directory run:
 
 `pip install -r requirements.txt`
 
@@ -34,7 +34,7 @@ https://docs.docker.com/compose/install/`
 
 - `python run.py dev.up` (foreground with logs)
 
-- `python run.py prod.up`
+- `python run.py prod.up` (run on background)
 
 # ROADMAP
 

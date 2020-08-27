@@ -5,7 +5,7 @@
         "password": "123456"
     },
     "django": {
-        "gunicorn_version": "19.7.1",
+        "gunicorn_version": "20.0.4",
         "djang_admin": {
             "username": "admin",
             "password": "123456",
