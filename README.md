@@ -1,4 +1,5 @@
-Docker deployer for Django application, maybe static site or nodejs
+Docker deployer for Django application, static site and frontend with nodejs
+like react js
 
 # REQUIREMENTS
 

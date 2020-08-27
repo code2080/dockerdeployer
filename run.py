@@ -29,7 +29,7 @@ def clone():
     for app in apps:
         app_dir = os.path.join(PARENT_DIR, app["name"])
         if not os.path.isdir(app_dir):
-            subprocess.Popen(['git', 'clone', app["git_repo"], app_dir, app["name"], '--depth=1'])
+            subprocess.Popen(['git', 'clone', app["git_repo"], app_dir, '--depth=1'])
 
 
 def build():
