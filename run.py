@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import subprocess
+from datetime import datetime
 
 from generators import generate_dotenv, \
                         generate_database_initial, \
@@ -130,7 +131,7 @@ def backup(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backup/{}_backup.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"], app["name"]))
+        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backups/{}_backup_{}.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"], app["name"], datetime.now().strftime("%Y_%m_%d_%H_%M_%S")))
 
 
 def restore(app_name, backup_path):
