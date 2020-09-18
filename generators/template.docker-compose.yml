@@ -21,6 +21,8 @@ services:
         - REQUIREMENTS=requirements_{{ app.name }}.txt
         - SETTINGS=settings_{{ app.name }}.py
     env_file: ./.env
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ../{{ app.name }}/:/app/
       - mysql:/var/lib/mysql
@@ -74,7 +76,13 @@ services:
       - {{ app.name }}
       {% endfor %}
     networks:
-      - shared
+      shared:
+        aliases:
+        {% for server in servers %}
+          {% set server_list = server.split(':') %}
+          - {{ server_list[0] }}
+        {% endfor %}
+
 volumes:
   mysql:
 {% for server in servers %}

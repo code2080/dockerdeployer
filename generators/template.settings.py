@@ -14,7 +14,7 @@ STATIC_ROOT = '/django/static/'
 MEDIA_ROOT = '/django/media/'
 
 DEBUG = False
-ALLOWED_HOSTS = ['{{ host }}']
+ALLOWED_HOSTS = ['{{ app_name }}', '{{ host }}']
 
 {% for setting in settings %}
 {{ setting.key }} = {{ setting.value|tojson }}

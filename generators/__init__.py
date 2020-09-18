@@ -88,6 +88,7 @@ def generate_django_settings():
         if app["type"] == "django":
             with open(os.path.join(PARENT_DIR, 'django', 'settings_{}.py'.format(app["name"])), 'w') as f:
                 f.write(template.render(
+                    app_name=app["name"],
                     db_name=app["database_name"],
                     db_usr=config["mysql"]["user"],
                     db_pwd=config["mysql"]["password"],
