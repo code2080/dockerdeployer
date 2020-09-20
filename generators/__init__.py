@@ -54,7 +54,7 @@ def generate_nginx_config():
     with open(os.path.join(PARENT_DIR, 'nginx', 'config', 'conf.d', 'default.conf'), 'w') as f:
         f.write(template.render(
             servers=servers,
-            customize_nginx=config["customize_nginx"]))
+            customize_nginx=config.get("customize_nginx")))
 
 
 def generate_docker_compose():
