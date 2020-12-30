@@ -131,7 +131,7 @@ def backup(app_name):
         if a["name"] == app_name:
             app = a
     if app:
-        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > backups/{}_backup_{}.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"], app["name"], datetime.now().strftime("%Y_%m_%d_%H_%M_%S")))
+        os.system('docker exec dode_database /usr/bin/mysqldump -u {} --password={} {} > {}/backups/{}_backup_{}.sql'.format(config["mysql"]["user"], config["mysql"]["password"], app["database_name"], BASE_DIR, app["name"], datetime.now().strftime("%Y_%m_%d_%H_%M_%S")))
 
 
 def restore(app_name, backup_path):
